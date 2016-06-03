@@ -16,7 +16,7 @@
   <div id="buttonsView"></div>
 
   <form id="issue-form">
-    <label for="issue-input">Add an Issue</label>
+    <label for="issue-input">Find an Issue</label>
     <input type="text" id="issue-input"><br>
     <!--<label for="user-input">UserName: </label>
     <input type="text" id="user-input"><br>
@@ -24,8 +24,9 @@
     <input type="text" id="pass-input"><br>-->
     
     <!-- Button triggers new issue to be added -->
-    <input id="addIssue" type="submit" value="Add an Issue">
+    <input id="addIssue" type="submit" value="Find an Issue">
   </form>
+  <input id="getIssues" type="submit" value="Get Queued Issues">
 
 
   <!-- issues will Get Dumped Dere -->
@@ -41,110 +42,112 @@
 
 	// displayIssueInfo function now re-renders the HTML to display the appropriate content. 
 	function displayIssueInfo(){
-		var issue = $(this).attr('data-name');
+		//var issue = $(this).attr('data-name');
+		var issue = $('#issue-input').val().trim();
 		console.log(issue);
 		//var user = $('#user-input').val().trim();
 		//var pass = $('#pass-input').val().trim();
-		//var queryURL = "http://jira/rest/api/2/search?jql=project=GP+order+by+duedate&fields=id,key";
-		//var url = "http://jira/rest/api/2/issue/" + issue;
-		var queryURL = "http://jira/rest/api/2/issue/" + issue;
-		console.log(queryURL);
+		var base = "http://jira/rest/api/2/"
+		
+		var issueURL = "issue/" + issue;
+		var issueKeyURL = 'search?jql=issuekey="' + issue + '"'
+	
 		// Creates AJAX call for the specific issue being 
-		$.ajax({url: queryURL,method: 'GET'}).done(function(response) {
+		$.ajax({url: base + issueKeyURL,method: 'GET'}).done(function(response) {
 
 			// Creates a generic div to hold the issue
 			var issueDiv = $('<div class="issue">');
 			var issueDiv = $('<div>').attr('class','issue');
 			console.log(response);
-			// Retrieves the Rating Data
-			//var rating = response.Rated;
+			console.log(response.issues[0].key);
 
-			// Creates an element to have the rating displayed
-			//var pOne = $('<p>').text( "Rating: " + rating);
+			// Retrieves the issueKey Data
+			var id = response.issues[0].key;
+			
+			// Creates an element to have the issueKey displayed
+			var pOne = $('<p>').text( "Issue Key: " + id);
 
-			// Displays the rrating
-			//issueDiv.append(pOne);
+			// Displays the issueKey
+			issueDiv.append(pOne);
 
-			// Retrieves the release year
-			//var released = response.Released;
+			// Retrieves the tasktype
+			var taskType = response.issues[0].fields.issuetype.name;
+			
+			// Creates an element to hold the tasktype
+			var pTwo = $('<p>').text( "Task Type: " + taskType);
 
-			// Creates an element to hold the release year
-			//var pTwo = $('<p>').text( "Released: " + released);
+			// Displays the tasktype
+			issueDiv.append(pTwo);
 
-			// Displays the release year
-			//issueDiv.append(pTwo);
+			// Retrieves the game id
+			var gameID = response.issues[0].fields.customfield_10023;
+			
+			// Creates an element to hold the game id
+			var pThree = $('<p>').text( "Game ID (SPID): " + gameID);
 
-			// Retrieves the plot
-			//var plot = response.Plot;
+			// Appends the game id
+			issueDiv.append(pThree);
 
-			// Creates an element to hold the plot
-			//var pThree = $('<p>').text( "Plot: " + plot);
+			// Retrieves the game name
+			var gameName = response.issues[0].fields.customfield_10280;
+			
+			// Creates an element to hold the gameName 
+			var pFour = $('<p>').text( "Game Name: " + gameName);
 
-			// Appends the plot
-			//issueDiv.append(pThree);
+			// Appends the gameName
+			issueDiv.append(pFour);
 
-			// Creates an element to hold the image 
-			//var image = $('<img>').attr("src", response.Poster);
+			// Retrieves the summary
+			var summary = response.issues[0].fields.summary;
+			
+			// Creates an element to hold the summary 
+			var pFour = $('<p>').text( "Summary: " + summary);
 
-			// Appends the image
-			//issueDiv.append(image);
+			// Appends the summary
+			issueDiv.append(pFour);
+
+			// Retrieves the status
+			var status = response.issues[0].fields.status.name;
+			
+			// Creates an element to hold the status 
+			var pFour = $('<p>').text( "Status: " + status);
+
+			// Appends the status
+			issueDiv.append(pFour);
 
 			// Puts the entire issue above the previous issues.
-			//$('#issuesView').prepend(issueDiv);
+			$('#issuesView').prepend(issueDiv);
 		});
 
-	}
+	};
 
-	// ========================================================
+ 
+	function displayProjectInfo(){
+		//var user = $('#user-input').val().trim();
+		//var pass = $('#pass-input').val().trim();
+		var base = "http://jira/rest/api/2/"
+		var projectURL = 'search?jql=project=GP AND issuetype = "Initial Release" AND status = Queued+order+by+duedate&fields=id,key&maxResults=150';
 
-	// Generic function for displaying issue data 
-	function renderButtons(){ 
+		// Creates AJAX call for the queued project issues
+		$.ajax({url: base + projectURL,method: 'GET'}).done(function(response) {
 
-		// Deletes the issues prior to adding new issues (this is necessary otherwise you will have repeat buttons)
-		$('#buttonsView').empty();
+			console.log(response);
+			$('#issuesView').text(JSON.stringify(response));
+		});
+	};
 
-		// Loops through the array of issues
-		for (var i = 0; i < issues.length; i++){
-
-			// Then dynamicaly generates buttons for each issue in the array
-
-			// Note the jQUery syntax here... 
-		    var a = $('<button>') // This code $('<button>') is all jQuery needs to create the beginning and end tag. (<button></button>)
-		    a.addClass('issue'); // Added a class 
-		    a.attr('data-name', issues[i]); // Added a data-attribute
-		    a.text(issues[i]); // Provided the initial button text
-		    $('#buttonsView').append(a); // Added the button to the HTML
-		}
-	}
-
-	// ========================================================
-
-	// This function handles events where one button is clicked
 	$('#addIssue').on('click', function(){
-
-		// This line of code will grab the input from the textbox
-		var issue = $('#issue-input').val().trim();
-
-		// The issue from the textbox is then added to our array
-		issues.push(issue);
+		displayIssueInfo();
 		
-		// Our array then runs which handles the processing of our issue array
-		renderButtons();
-
-		// We have this line so that users can hit "enter" instead of clicking on ht button and it won't move to the next page
 		return false;
-	})
+	});
 
-	// ========================================================
-
-	// Generic function for displaying the issueInfo
-	$(document).on('click', '.issue', displayIssueInfo);
-
-
-	// ========================================================
-
-	// This calls the renderButtons() function
-	renderButtons();
+	$('#getIssues').on('click', function(){
+		displayProjectInfo();
+		
+		return false;
+	});
+	
 
 
 </script>
