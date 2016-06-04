@@ -16,8 +16,8 @@
   <div id="buttonsView"></div>
 
   <form id="issue-form">
-    <label for="issue-input">Find an Issue</label>
-    <input type="text" id="issue-input"><br>
+    <label for="issue-input">Find an Issue:</label>
+    <input type="text" placeholder="Example: GP-1234" id="issue-input"><br>
     <!--<label for="user-input">UserName: </label>
     <input type="text" id="user-input"><br>
     <label for="pass-input">Password:</label>
@@ -126,13 +126,187 @@
 		//var user = $('#user-input').val().trim();
 		//var pass = $('#pass-input').val().trim();
 		var base = "http://jira/rest/api/2/"
-		var projectURL = 'search?jql=project=GP AND issuetype = "Initial Release" AND status = Queued+order+by+duedate&fields=id,key&maxResults=150';
-
+		var projectURL = 'search?jql=project=GP AND issuetype = "Initial Release" AND status = Queued+order+by+duedate&maxResults=150';
+			// extra parameters to limit result set: &fields=id,key
+		
 		// Creates AJAX call for the queued project issues
 		$.ajax({url: base + projectURL,method: 'GET'}).done(function(response) {
 
 			console.log(response);
-			$('#issuesView').text(JSON.stringify(response));
+			//$('#issuesView').text(JSON.stringify(response));
+			 var counter = response.total;
+			 console.log(counter);
+			 var issuesArray = [];
+			 Object.keys(response.issues).forEach(function(key,index) {
+    			
+				var array = [];
+				array.push(key);
+				var num = parseInt(key)+1;
+				var issueDiv = $('<div>').attr('class','issue' + num);
+			 	
+			 	var summary = response.issues[key].fields.summary;
+			 	array.push(summary);
+			 	var pOne = $('<p>').text( num + ". Summary: " + summary).css({'font-size': '18px', 'font-weight':'bold','margin-top':'10px','margin-bottom':'2px'});
+				issueDiv.append(pOne);
+
+				var spid = response.issues[key].fields.customfield_10023;
+				array.push(spid);
+				if (spid === null){
+					var pTwo = $('<p>').text( "SPID: " + spid).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pTwo = $('<p>').text( "SPID: " + spid).css('margin', '2px');
+				};
+				issueDiv.append(pTwo);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_10712)){
+					var productLine = response.issues[key].fields.customfield_10712;
+					array.push(productLine);
+				} else {
+					var productLine = response.issues[key].fields.customfield_10712.value;
+					array.push(productLine);
+				};
+				if (productLine === null){
+					var pThree = $('<p>').text( "Product Line: " + productLine).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pThree = $('<p>').text( "Product Line: " + productLine).css('margin', '2px');
+				};
+				issueDiv.append(pThree);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_10628)){
+					var gamePlatform = response.issues[key].fields.customfield_10628;
+					array.push(gamePlatform);
+				} else {
+					var gamePlatform = response.issues[key].fields.customfield_10628.value;
+					array.push(gamePlatform);
+				};
+				if (gamePlatform === null){
+					var pFour = $('<p>').text( "Game Platform: " + gamePlatform).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pFour = $('<p>').text( "Game Platform: " + gamePlatform).css('margin', '2px');
+				};
+				issueDiv.append(pFour);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_14711)){
+					var minimumPlatform = response.issues[key].fields.customfield_14711;
+					array.push(minimumPlatform);
+				} else {
+					var minimumPlatform = response.issues[key].fields.customfield_14711.value;
+					array.push(minimumPlatform);
+				};
+				if (minimumPlatform === null){
+					var pFive = $('<p>').text( "Minimum Platform: " + minimumPlatform).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pFive = $('<p>').text( "Minimum Platform: " + minimumPlatform).css('margin', '2px');
+				};
+				issueDiv.append(pFive);
+
+				var gameTitle = response.issues[key].fields.customfield_10280;
+				array.push(gameTitle);
+				if (gameTitle === null){
+					var pSix = $('<p>').text( "Game Title: " + gameTitle).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pSix = $('<p>').text( "Game Title: " + gameTitle).css('margin', '2px');
+				};
+				issueDiv.append(pSix);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_11123)){
+					var gpGameType = response.issues[key].fields.customfield_11123;
+					array.push(gpGameType);
+				} else { 
+					var gpGameType = response.issues[key].fields.customfield_11123.value;
+					array.push(gpGameType);
+				};
+				if (gpGameType === null){
+					var pSeven = $('<p>').text( "GP Game Type: " + gpGameType).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pSeven = $('<p>').text( "GP Game Type: " + gpGameType).css('margin', '2px');
+				};
+				issueDiv.append(pSeven);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_10716)){
+					var reels = response.issues[key].fields.customfield_10716;
+					array.push(reels);
+				} else {
+					var reels = response.issues[key].fields.customfield_10716.value;
+					array.push(reels);
+				};
+				if (reels === null){
+					var pEight = $('<p>').text( "Reels: " + reels).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pEight = $('<p>').text( "Reels: " + reels).css('margin', '2px');
+				};
+				issueDiv.append(pEight);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_10717)){
+					var lines = response.issues[key].fields.customfield_10717;
+					array.push(lines);
+				} else {
+					var lines = response.issues[key].fields.customfield_10717.value;
+					array.push(lines);
+				};
+				if (lines === null){
+					var pNine = $('<p>').text( "Lines: " + lines).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pNine = $('<p>').text( "Lines: " + lines).css('margin', '2px');
+				};
+				issueDiv.append(pNine);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_10718)){
+					var maxBet = response.issues[key].fields.customfield_10718;
+					array.push(maxBet);
+				} else {
+					var maxBet = response.issues[key].fields.customfield_10718.value;
+					array.push(maxBet);
+				};
+				if (maxBet === null){
+					var pTen = $('<p>').text( "Max Bet: " + maxBet).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pTen = $('<p>').text( "Max Bet: " + maxBet).css('margin', '2px');
+				};
+				issueDiv.append(pTen);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_10719)){
+					var costToCover = response.issues[key].fields.customfield_10719;
+					array.push(costToCover);
+				} else {
+					var costToCover = response.issues[key].fields.customfield_10719.value;
+					array.push(costToCover);
+				};
+				if (costToCover === null){
+					var pEleven = $('<p>').text( "Cost to Cover: " + costToCover).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pEleven = $('<p>').text( "Cost to Cover: " + costToCover).css('margin', '2px');
+				};
+				issueDiv.append(pEleven);
+
+				if($.isEmptyObject(response.issues[key].fields.customfield_11014)){
+					var mechVideo = response.issues[key].fields.customfield_11014;
+					array.push(mechVideo);
+				} else {
+					var mechVideo = response.issues[key].fields.customfield_11014.value;
+					array.push(mechVideo);
+				};
+				if (mechVideo === null){
+					var pTwelve = $('<p>').text( "MECH/VIDEO: " + mechVideo).css({'margin': '2px','background-color':'yellow',width:'400px'});
+				} else {
+					var pTwelve = $('<p>').text( "MECH/VIDEO: " + mechVideo).css('margin', '2px');
+				};
+				issueDiv.append(pTwelve);
+
+				$('#issuesView').append(issueDiv);
+				console.log(array);
+				issuesArray.push(array);
+			});
+			console.log(issuesArray);
+			var csvContent = "data:text/csv;charset=utf-8,";
+			issuesArray.forEach(function(infoArray, index){
+		   		dataString = infoArray.join(",");
+		   		csvContent += index < issuesArray.length ? dataString+ "\n" : dataString;
+			}); 
+			var encodedUri = encodeURI(csvContent);
+			var link = $('<a>').attr('href',encodedUri).attr('download',"queued_issues.csv").text('Download Queued Issues (CSV Format)');
+			$('#issuesView').prepend(link);
+			
 		});
 	};
 
