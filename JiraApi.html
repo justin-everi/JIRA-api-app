@@ -24,9 +24,11 @@
     <input type="text" id="pass-input"><br>-->
     
     <!-- Button triggers new issue to be added -->
-    <input id="addIssue" type="submit" value="Find an Issue">
+    <input id="findIssue" type="submit" value="Find an Issue">
   </form>
   <input id="getIssues" type="submit" value="Get Queued Issues">
+  <input id="addIssues" type="submit" value="Export Issues">
+  <div id="downloadButtons"></div>
 
 
   <!-- issues will Get Dumped Dere -->
@@ -37,6 +39,9 @@
 
 	// Initial array of issues
 	var issues = [];
+	var issuesArray = [];
+	var exportIssuesArray = [];
+	var checkedValues = [];
 
 	// ========================================================
 
@@ -51,7 +56,7 @@
 		
 		var issueURL = "issue/" + issue;
 		var issueKeyURL = 'search?jql=issuekey="' + issue + '"'
-	
+		console.log(base + issueKeyURL);
 		// Creates AJAX call for the specific issue being 
 		$.ajax({url: base + issueKeyURL,method: 'GET'}).done(function(response) {
 
@@ -128,19 +133,16 @@
 		var base = "http://jira/rest/api/2/"
 		var projectURL = 'search?jql=project=GP AND issuetype = "Initial Release" AND status = Queued+order+by+duedate&maxResults=150';
 			// extra parameters to limit result set: &fields=id,key
-		
+		console.log(base + projectURL);
 		// Creates AJAX call for the queued project issues
 		$.ajax({url: base + projectURL,method: 'GET'}).done(function(response) {
 
 			console.log(response);
-			//$('#issuesView').text(JSON.stringify(response));
 			 var counter = response.total;
 			 console.log(counter);
-			 var issuesArray = [];
 			 Object.keys(response.issues).forEach(function(key,index) {
     			
 				var array = [];
-				array.push(key);
 				var num = parseInt(key)+1;
 				var issueDiv = $('<div>').attr('class','issue' + num);
 			 	
@@ -148,6 +150,7 @@
 			 	array.push(summary);
 			 	var pOne = $('<p>').text( num + ". Summary: " + summary).css({'font-size': '18px', 'font-weight':'bold','margin-top':'10px','margin-bottom':'2px'});
 				issueDiv.append(pOne);
+				pOne.prepend('<input type="checkbox" value="' + key + '" />');
 
 				var spid = response.issues[key].fields.customfield_10023;
 				array.push(spid);
@@ -294,6 +297,7 @@
 				issueDiv.append(pTwelve);
 
 				$('#issuesView').append(issueDiv);
+
 				console.log(array);
 				issuesArray.push(array);
 			});
@@ -304,13 +308,35 @@
 		   		csvContent += index < issuesArray.length ? dataString+ "\n" : dataString;
 			}); 
 			var encodedUri = encodeURI(csvContent);
-			var link = $('<a>').attr('href',encodedUri).attr('download',"queued_issues.csv").text('Download Queued Issues (CSV Format)');
-			$('#issuesView').prepend(link);
+			var link = $('<button>').html('<a href="' + encodedUri + '" download="queued_issues.csv">Download Queued Issues (CSV Format)</a>');
+			$('#downloadButtons').append(link);
 			
 		});
 	};
 
-	$('#addIssue').on('click', function(){
+	function exportProjectIssues(){
+		checkedValues = $(':checkbox:checked').map(function() {
+    	return this.value;
+		});
+
+		console.log(checkedValues);
+		exportIssuesArray = [];
+		for (var i = 0; i < checkedValues.length; i++) {
+			exportIssuesArray.push(issuesArray[checkedValues[i]]);
+		};
+		console.log(exportIssuesArray);
+		var csvContent = "data:text/csv;charset=utf-8,";
+			exportIssuesArray.forEach(function(infoArray, index){
+		   		dataString = infoArray.join(",");
+		   		csvContent += index < exportIssuesArray.length ? dataString+ "\n" : dataString;
+			}); 
+			var encodedUri = encodeURI(csvContent);
+			var link = $('<button>').html('<a href="' + encodedUri + '" download="export_issues.csv">Download Exported Issues (CSV Format)</a>');
+			$('#downloadButtons').append(link);
+			
+	};
+
+	$('#findIssue').on('click', function(){
 		displayIssueInfo();
 		
 		return false;
@@ -322,6 +348,11 @@
 		return false;
 	});
 	
+	$('#addIssues').on('click', function(){
+		exportProjectIssues();
+		
+		return false;
+	});
 
 
 </script>
